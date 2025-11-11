@@ -10,7 +10,6 @@
         #chat-messages::-webkit-scrollbar { width: 6px; }
         #chat-messages::-webkit-scrollbar-thumb { background-color: #d1d5db; border-radius: 3px; }
         #chat-messages::-webkit-scrollbar-track { background-color: #f3f4f6; }
-        /* Esconde o app de chat por padrão */
         #chat-app { display: none; }
     </style>
 </head>
@@ -57,48 +56,11 @@
 
     <script>
         // ######################################################
-        // ### 1. LÓGICA DE AUTENTICAÇÃO (O "CONTROLE") ###
-        // ######################################################
-        
-        // Aqui fica sua lista de clientes pagantes.
-        // Você inventa qualquer chave secreta para eles.
-        const validTokens = [
-            "IGREJABATISTA_SECRETO_123", // Exemplo Cliente 1
-            "PASTORJOAO_ABC_999",       // Exemplo Cliente 2
-            "MEU_TOKEN_PESSOAL_TESTE",  // Token para você testar
-            // Adicione novos clientes aqui
-        ];
-
-        // Função que roda assim que a página carrega
-        (function checkAccess() {
-            // Pega os parâmetros da URL (ex: ?token=VALOR)
-            const params = new URLSearchParams(window.location.search);
-            const token = params.get('token');
-
-            // Verifica se o token da URL existe E está na sua lista de tokens válidos
-            if (token && validTokens.includes(token)) {
-                // TOKEN VÁLIDO!
-                console.log("Acesso Concedido.");
-                // Esconde a tela de login
-                document.getElementById('login-screen').style.display = 'none';
-                // Mostra o aplicativo de chat
-                document.getElementById('chat-app').style.display = 'flex';
-                // Inicia o chat
-                initializeChat();
-            } else {
-                // TOKEN INVÁLIDO OU AUSENTE
-                console.log("Acesso Negado. Token inválido ou ausente.");
-                // (Não fazemos nada, o usuário continuará vendo a tela de "Acesso Negado")
-            }
-        })();
-
-
-        // ######################################################
-        // ### 2. LÓGICA DO CHAT (Idêntica à anterior) ###
+        // ### 1. DEFINIÇÕES GLOBAIS (CORRIGIDO) ###
         // ######################################################
 
+        // TODAS AS VARIÁVEIS SÃO MOVIDAS PARA O TOPO
         const API_URL = "https://pastor-ai.onrender.com/gerar_conteudo/";
-
         const chatMessages = document.getElementById('chat-messages');
         const userInput = document.getElementById('user-input');
         const sendButton = document.getElementById('send-button');
@@ -112,7 +74,44 @@
                 </div>
             </div>`;
 
+        // Lista de tokens válidos
+        const validTokens = [
+            "IGREJABATISTA_SECRETO_123", // Exemplo Cliente 1
+            "PASTORJOAO_ABC_999",       // Exemplo Cliente 2
+            "MEU_TOKEN_PESSOAL_TESTE",  // Token para você testar
+        ];
+
+
+        // ######################################################
+        // ### 2. LÓGICA DE AUTENTICAÇÃO ###
+        // ######################################################
+        
+        // Esta função agora roda DEPOIS que as variáveis acima foram definidas
+        (function checkAccess() {
+            const params = new URLSearchParams(window.location.search);
+            const token = params.get('token');
+
+            if (token && validTokens.includes(token)) {
+                // TOKEN VÁLIDO!
+                console.log("Acesso Concedido.");
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('chat-app').style.display = 'flex';
+                
+                // Agora esta chamada vai funcionar!
+                initializeChat();
+            } else {
+                // TOKEN INVÁLIDO OU AUSENTE
+                console.log("Acesso Negado. Token inválido ou ausente.");
+            }
+        })();
+
+
+        // ######################################################
+        // ### 3. LÓGICA DO CHAT (Funções) ###
+        // ######################################################
+
         function initializeChat() {
+            // Esta linha (chatMessages.innerHTML) agora é segura
             chatMessages.innerHTML = welcomeMessage;
             userInput.value = '';
         }
@@ -193,13 +192,12 @@
             html2pdf().set(options).from(chatContent).save();
         }
 
-        // --- 3. Event Listeners ---
+        // --- 4. Event Listeners ---
         sendButton.addEventListener('click', handleSendMessage);
         userInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); });
         clearButton.addEventListener('click', initializeChat);
         pdfButton.addEventListener('click', handleSavePDF);
         
-        // (A função initializeChat() agora é chamada pela lógica de autenticação se o token for válido)
     </script>
 </body>
 </html>
