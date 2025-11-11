@@ -4,44 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pastor AI - Assistente Teológico</title>
-    <!-- 1. Carrega o Tailwind CSS para o design -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
     <style>
-        /* Estilo para a barra de rolagem */
-        #chat-messages::-webkit-scrollbar {
-            width: 6px;
-        }
-        #chat-messages::-webkit-scrollbar-thumb {
-            background-color: #d1d5db; /* gray-400 */
-            border-radius: 3px;
-        }
-        #chat-messages::-webkit-scrollbar-track {
-            background-color: #f3f4f6; /* gray-100 */
-        }
+        #chat-messages::-webkit-scrollbar { width: 6px; }
+        #chat-messages::-webkit-scrollbar-thumb { background-color: #d1d5db; border-radius: 3px; }
+        #chat-messages::-webkit-scrollbar-track { background-color: #f3f4f6; }
     </style>
 </head>
 <body class="bg-gray-100 font-sans flex items-center justify-center min-h-screen p-4">
 
-    <!-- Janela Principal do Chat -->
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col" style="height: 85vh; max-height: 700px;">
         
-        <!-- Cabeçalho -->
-        <header class="bg-blue-600 text-white p-5 rounded-t-2xl shadow-lg text-center">
-            <h1 class="text-2xl font-bold">Pastor AI</h1>
-            <p class="text-sm opacity-90">Seu assistente teológico 24/7</p>
+        <header class="bg-blue-600 text-white p-5 rounded-t-2xl shadow-lg flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold">Pastor AI</h1>
+                <p class="text-sm opacity-90">Assistente Teológico (com atitude)</p>
+            </div>
+            <div class="flex space-x-2">
+                <button id="clear-button" title="Limpar Chat" class="p-2 rounded-full hover:bg-blue-700 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12.578 0a48.108 48.108 0 013.478-.397m7.5 0a48.667 48.667 0 00-7.5 0" />
+                    </svg>
+                </button>
+                <button id="pdf-button" title="Salvar em PDF" class="p-2 rounded-full hover:bg-blue-700 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                    </svg>
+                </button>
+            </div>
         </header>
 
-        <!-- Área de Mensagens -->
         <main id="chat-messages" class="flex-1 p-6 space-y-4 overflow-y-auto bg-gray-50">
-            <!-- Mensagem inicial do Bot -->
-            <div class="flex justify-start">
-                <div class="bg-gray-200 text-gray-800 p-3 rounded-lg max-w-xs shadow">
-                    <p>Olá! Sou o Pastor AI. Como posso ajudá-lo a entender melhor as Escrituras hoje?</p>
-                </div>
-            </div>
-        </main>
+            </main>
 
-        <!-- Área de Digitação -->
         <footer class="p-4 border-t border-gray-200 bg-white rounded-b-2xl">
             <div class="flex space-x-3">
                 <input 
@@ -54,7 +52,6 @@
                     id="send-button" 
                     class="bg-blue-600 text-white rounded-full p-3 shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition transform hover:scale-105 active:scale-95"
                 >
-                    <!-- Ícone de Enviar (SVG) -->
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.875L6 12z" />
                     </svg>
@@ -66,19 +63,33 @@
     <script>
         // --- 2. Lógica do JavaScript ---
 
-        // IMPORTANTE: Coloque a URL da sua API do Render aqui
-        // Certifique-se que termina com a barra "/"
         const API_URL = "https://pastor-ai.onrender.com/gerar_conteudo/";
 
         // Elementos do HTML
         const chatMessages = document.getElementById('chat-messages');
         const userInput = document.getElementById('user-input');
         const sendButton = document.getElementById('send-button');
+        
+        // ### NOVO: Elementos dos botões ###
+        const clearButton = document.getElementById('clear-button');
+        const pdfButton = document.getElementById('pdf-button');
+        const welcomeMessage = `
+            <div class="flex justify-start">
+                <div class="bg-gray-200 text-gray-800 p-3 rounded-lg max-w-xs shadow">
+                    <p>Olá! Sou o Pastor AI. Está preparado para a palavra? Pergunte-me algo!</p>
+                </div>
+            </div>`;
+
+        // Função para iniciar ou limpar o chat
+        function initializeChat() {
+            chatMessages.innerHTML = welcomeMessage;
+            userInput.value = '';
+        }
 
         // Função para adicionar uma mensagem na tela
         function addMessage(message, sender, messageId = null) {
             const messageElement = document.createElement('div');
-            messageElement.classList.add('flex');
+            messageElement.classList.add('flex', 'mb-4'); // Adicionado mb-4 para espaçamento
             
             let content = '';
             
@@ -91,12 +102,15 @@
                 `;
             } else {
                 messageElement.classList.add('justify-start');
+                // Formata quebras de linha vindas do backend
+                message = message.replace(/\n/g, '<br>');
+                
                 content = `
                     <div class="bg-gray-200 text-gray-800 p-3 rounded-lg max-w-xs shadow">
                         <p>${message}</p>
                     </div>
                 `;
-                // Adiciona uma classe "verses" para estilização futura, se quisermos
+                
                 if (messageId === 'verses') {
                     content = `
                     <div class="bg-gray-100 border border-gray-200 text-gray-700 p-3 rounded-lg max-w-xs shadow-inner mt-2">
@@ -113,12 +127,9 @@
 
             messageElement.innerHTML = content;
             chatMessages.appendChild(messageElement);
-            
-            // Rola para a mensagem mais recente
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        // Função para exibir o indicador de "digitando..."
         function showLoading() {
             addMessage(
                 '<div class="flex items-center space-x-1">' +
@@ -131,7 +142,6 @@
             );
         }
 
-        // Função para remover o indicador de "digitando..."
         function hideLoading() {
             const loading = document.getElementById('loading-indicator');
             if (loading) {
@@ -142,24 +152,19 @@
         // Função principal para enviar a mensagem
         async function handleSendMessage() {
             const query = userInput.value.trim();
-            if (!query) return; // Não envia mensagens vazias
+            if (!query) return; 
 
-            // 1. Mostra a mensagem do usuário na tela
             addMessage(query, 'user');
-            userInput.value = ''; // Limpa o campo
+            userInput.value = ''; 
             userInput.disabled = true;
             sendButton.disabled = true;
             
-            // 2. Mostra o indicador "digitando..."
             showLoading();
 
             try {
-                // 3. Chama a sua API (o Backend)
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ query: query })
                 });
 
@@ -171,19 +176,15 @@
 
                 const data = await response.json();
 
-                // 4. Exibe a resposta principal do Bot
                 addMessage(data.resposta_baseada_na_biblia, 'bot');
                 
-                // 5. Exibe os versículos de apoio (se houver)
                 if (data.versiculos_encontrados && data.versiculos_encontrados.length > 0) {
-                    // Formata os versículos para exibição
                     const versesText = data.versiculos_encontrados
                                          .join('\n')
-                                         .replace(/Linha \d+:/g, '•'); // Limpa o 'Linha ...:'
+                                         .replace(/Linha \d+:/g, '•'); 
                     addMessage(versesText, 'bot', 'verses');
                 }
                 
-                // 6. (Bônus) Exibe a oração sugerida
                  if (data.oracao_sugestao) {
                     addMessage(`<em>"${data.oracao_sugestao}"</em>`, 'bot');
                 }
@@ -193,24 +194,42 @@
                 hideLoading();
                 addMessage("Desculpe, ocorreu um erro. Não consegui me conectar ao meu cérebro. Tente novamente mais tarde.", 'bot');
             } finally {
-                // Reabilita o campo de digitação e o botão
                 userInput.disabled = false;
                 sendButton.disabled = false;
                 userInput.focus();
             }
         }
+        
+        // ### NOVO: Função para Salvar PDF ###
+        function handleSavePDF() {
+            console.log("Gerando PDF...");
+            const chatContent = document.getElementById('chat-messages');
+            const options = {
+                margin:       1,
+                filename:     'pastor_ai_conversa.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            
+            // html2pdf usa 'Promise'
+            html2pdf().set(options).from(chatContent).save();
+        }
 
         // --- 3. Event Listeners ---
-        
-        // Envia ao clicar no botão
         sendButton.addEventListener('click', handleSendMessage);
-        
-        // Envia ao pressionar "Enter"
         userInput.addEventListener('keypress', (event) => {
             if (event.key === 'Enter') {
                 handleSendMessage();
             }
         });
+        
+        // ### NOVO: Listeners dos novos botões ###
+        clearButton.addEventListener('click', initializeChat);
+        pdfButton.addEventListener('click', handleSavePDF);
+
+        // Inicia o chat quando a página carrega
+        initializeChat();
 
     </script>
 </body>
