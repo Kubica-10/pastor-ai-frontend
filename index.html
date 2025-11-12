@@ -56,11 +56,12 @@
 
     <script>
         // ######################################################
-        // ### 1. DEFINIÇÕES GLOBAIS (CORRIGIDO) ###
+        // ### 1. DEFINIÇÕES GLOBAIS ###
         // ######################################################
 
-        // TODAS AS VARIÁVEIS SÃO MOVIDAS PARA O TOPO
-        const API_URL = "https://pastor-ai.onrender.com/gerar_conteudo/";
+        // ⚠️ MUDE ESTA URL QUANDO O HUGGINGFACE ESTIVER RODANDO!
+        const API_URL = "https://kubicasouza-pastor-ai.hf.space/gerar_conteudo/";
+        
         const chatMessages = document.getElementById('chat-messages');
         const userInput = document.getElementById('user-input');
         const sendButton = document.getElementById('send-button');
@@ -76,9 +77,9 @@
 
         // Lista de tokens válidos
         const validTokens = [
-            "IGREJABATISTA_SECRETO_123", // Exemplo Cliente 1
-            "PASTORJOAO_ABC_999",       // Exemplo Cliente 2
-            "MEU_TOKEN_PESSOAL_TESTE",  // Token para você testar
+            "IGREJABATISTA_SECRETO_123",
+            "PASTORJOAO_ABC_999",
+            "MEU_TOKEN_PESSOAL_TESTE",
         ];
 
 
@@ -86,32 +87,26 @@
         // ### 2. LÓGICA DE AUTENTICAÇÃO ###
         // ######################################################
         
-        // Esta função agora roda DEPOIS que as variáveis acima foram definidas
         (function checkAccess() {
             const params = new URLSearchParams(window.location.search);
             const token = params.get('token');
 
             if (token && validTokens.includes(token)) {
-                // TOKEN VÁLIDO!
                 console.log("Acesso Concedido.");
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('chat-app').style.display = 'flex';
-                
-                // Agora esta chamada vai funcionar!
                 initializeChat();
             } else {
-                // TOKEN INVÁLIDO OU AUSENTE
                 console.log("Acesso Negado. Token inválido ou ausente.");
             }
         })();
 
 
         // ######################################################
-        // ### 3. LÓGICA DO CHAT (Funções) ###
+        // ### 3. LÓGICA DO CHAT ###
         // ######################################################
 
         function initializeChat() {
-            // Esta linha (chatMessages.innerHTML) agora é segura
             chatMessages.innerHTML = welcomeMessage;
             userInput.value = '';
         }
@@ -192,7 +187,10 @@
             html2pdf().set(options).from(chatContent).save();
         }
 
-        // --- 4. Event Listeners ---
+        // ######################################################
+        // ### 4. EVENT LISTENERS ###
+        // ######################################################
+        
         sendButton.addEventListener('click', handleSendMessage);
         userInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); });
         clearButton.addEventListener('click', initializeChat);
